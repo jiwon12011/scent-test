@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Today's Scent — 오늘의 당신을 향으로 읽다</title>
+<meta name="description" content="향을 한 번도 직접 묻지 않는 24개의 감각 질문으로, 지금 이 순간의 당신에게 맞는 향을 찾아냅니다." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    /* Cool grey monochrome editorial — Nimbus Cloud / Steel Gray */
+    --bg:#f4f5f6; --card:#fbfbfc; --card-2:#ebecee;
+    --gold:#7e8287; --gold-soft:#a6aaae; --gold-line:rgba(126,130,135,.32);
+    --ink:#101214; --ink-2:#3a3d40; --muted:#86898d;
+    --glass:rgba(120,125,130,.13); --glass-line:rgba(168,172,176,.4);
+    --ok:#6c7075;
+    --serif:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --kr:"Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
+    --maxw:680px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--kr); color:var(--ink-2); background:var(--bg);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+    background-image:
+      radial-gradient(120% 80% at 50% -10%, rgba(176,182,188,.20), transparent 60%),
+      radial-gradient(90% 60% at 100% 110%, rgba(140,146,152,.10), transparent 55%);
+    background-attachment:fixed;
+    min-height:100dvh; display:flex; flex-direction:column;
+  }
+  .wrap{flex:1; width:100%; max-width:var(--maxw); margin:0 auto; padding:28px 24px 64px; display:flex; flex-direction:column}
+  .center{justify-content:center}
+
+  /* ---------- progress ---------- */
+  .topbar{position:sticky; top:0; z-index:5; padding:14px 0 10px; background:linear-gradient(var(--bg) 70%, transparent)}
+  .meta-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+  .brand{font-family:var(--sans); font-weight:400; font-size:11px; letter-spacing:.28em; color:var(--muted); text-transform:uppercase}
+  .count{font-family:var(--sans); font-size:11px; letter-spacing:.12em; color:var(--gold)}
+  .bar{height:4px; border-radius:99px; background:#e4e6e8; overflow:hidden}
+  .bar > i{display:block; height:100%; width:0; border-radius:99px;
+    background:linear-gradient(90deg,var(--gold-soft),var(--gold)); transition:width .5s cubic-bezier(.22,1,.36,1)}
+
+  /* ---------- intro ---------- */
+  .intro{text-align:center; padding-top:6vh; position:relative}
+  /* 인트로 분위기 배경 — 은은한 실사 + 비네팅 페이드, 텍스트 가독성 유지 */
+  #intro::before{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:url("assets/scents/webp/softFloral.webp") center 28%/cover no-repeat;
+    opacity:.26;
+    -webkit-mask-image:radial-gradient(125% 95% at 50% 26%, #000 22%, transparent 72%);
+            mask-image:radial-gradient(125% 95% at 50% 26%, #000 22%, transparent 72%)}
+  .eyebrow{font-family:var(--sans); font-size:12px; letter-spacing:.34em; color:var(--gold); text-transform:uppercase; margin-bottom:22px}
+  .intro h1{font-family:var(--serif); font-weight:300; font-size:clamp(40px,9vw,64px); line-height:1.06; letter-spacing:-.02em; color:var(--ink)}
+  .intro h1 em{font-style:normal; font-weight:500; color:var(--gold)}
+  .lede{max-width:30em; margin:24px auto 0; font-weight:300; font-size:16px; color:var(--ink-2)}
+  .note-line{margin:30px auto 0; max-width:26em; font-family:var(--serif); font-weight:300; font-size:19px; letter-spacing:-.01em; color:var(--ink); opacity:.8}
+
+  /* ---------- buttons ---------- */
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:.5em;
+    font-family:var(--sans); font-weight:400; font-size:13px; letter-spacing:.14em; text-transform:uppercase;
+    height:52px; padding:0 34px; border:none; border-radius:99px; cursor:pointer; color:#f6f7f8;
+    background:linear-gradient(120deg,#7e8287,#4f5358); transition:transform .25s, box-shadow .25s, opacity .25s;
+    box-shadow:0 8px 24px -10px rgba(20,24,28,.4)}
+  .btn:hover{transform:translateY(-2px); box-shadow:0 14px 30px -12px rgba(20,24,28,.5)}
+  .btn:disabled{opacity:.4; cursor:not-allowed; transform:none; box-shadow:none}
+  .btn.ghost{background:none; color:var(--ink-2); box-shadow:none; border:1px solid var(--gold-line); height:46px; padding:0 22px}
+  .btn.ghost:hover{background:var(--card-2); transform:none}
+  .actions{display:flex; gap:12px; justify-content:center; margin-top:34px; flex-wrap:wrap}
+
+  /* ---------- question ---------- */
+  .q-wrap{margin-top:6px}
+  .q-index{font-family:var(--sans); font-size:11px; letter-spacing:.2em; color:var(--gold); margin-bottom:14px}
+  legend.q-text{font-family:var(--serif); font-weight:400; font-size:clamp(26px,5.4vw,37px); line-height:1.28; color:var(--ink); letter-spacing:-.02em; margin-bottom:6px; display:block}
+  fieldset{border:none}
+  .opts{list-style:none; margin-top:30px; display:flex; flex-direction:column; gap:12px}
+  .opt{position:relative}
+  .opt input{position:absolute; opacity:0; width:1px; height:1px}
+  .opt label{display:flex; align-items:center; gap:14px; min-height:58px; padding:14px 20px; cursor:pointer;
+    background:var(--card); border:1px solid var(--gold-line); border-radius:10px; color:var(--ink-2);
+    font-size:16px; transition:background .2s, border-color .2s, transform .2s}
+  .opt label:hover{background:var(--card-2); border-color:var(--gold)}
+  .opt label .tick{flex:0 0 18px; width:18px; height:18px; border-radius:99px; border:1.5px solid var(--gold-line); transition:all .2s}
+  .opt input:checked + label{background:#e6e8ea; border-color:var(--gold); transform:translateX(2px)}
+  .opt input:checked + label .tick{border-color:var(--gold); background:var(--gold); box-shadow:inset 0 0 0 3px var(--card)}
+  .opt input:focus-visible + label{outline:2px solid var(--gold); outline-offset:2px}
+  .nav{display:flex; justify-content:space-between; align-items:center; margin-top:30px}
+
+  /* ---------- result ---------- */
+  .result{animation:fade .6s ease both}
+  .r-stamp{font-family:var(--sans); font-size:11px; letter-spacing:.22em; color:var(--muted); text-transform:uppercase; text-align:center}
+  .r-state{font-family:var(--serif); font-weight:300; font-size:clamp(21px,4.4vw,29px); line-height:1.4; letter-spacing:-.015em; color:var(--ink); text-align:center; max-width:24em; margin:14px auto 0}
+  .hero-card{position:relative; margin-top:30px; border-radius:18px; overflow:hidden; border:1px solid var(--glass-line);
+    background:var(--glass); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:0 20px 60px -30px rgba(20,24,28,.3)}
+  /* 풀컬러 — 향의 분위기를 색 그대로. 사진이 화면에서 살짝 더 살게 미세 보정만 */
+  .hero-img{height:222px; background-size:cover; background-position:center; position:relative;
+    filter:saturate(1.05) contrast(1.03)}
+  .hero-img::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(244,245,246,.0) 55%,rgba(16,18,20,.34))}
+  .hero-body{padding:26px 24px 28px}
+  .fam{font-family:var(--sans); font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--gold)}
+  .r-name{font-family:var(--serif); font-weight:600; font-size:clamp(32px,7vw,46px); line-height:1.08; letter-spacing:-.025em; color:var(--ink); margin-top:6px}
+  .r-name small{display:block; font-family:var(--sans); font-weight:300; font-size:13px; letter-spacing:.1em; color:var(--muted); margin-top:8px}
+  .r-mood{font-size:15.5px; color:var(--ink-2); margin-top:16px; font-weight:300}
+  .r-vibe{font-family:var(--serif); font-weight:300; font-size:17px; letter-spacing:-.01em; color:var(--ink); opacity:.75; margin-top:12px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px}
+  .chip{font-family:var(--sans); font-size:12px; letter-spacing:.06em; color:var(--ink-2); background:rgba(251,251,252,.72); border:1px solid var(--gold-line); border-radius:99px; padding:7px 14px}
+
+  .conf{margin-top:26px; text-align:center}
+  .conf b{font-family:var(--serif); font-size:34px; color:var(--gold); font-weight:500}
+  .conf span{font-family:var(--sans); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); display:block; margin-top:2px}
+
+  .sliders{margin-top:18px; display:flex; flex-direction:column; gap:18px}
+  .axis{}
+  .axis .lab{display:flex; justify-content:space-between; font-family:var(--sans); font-size:12px; letter-spacing:.08em; color:var(--muted); margin-bottom:7px}
+  .axis .lab .on{color:var(--ink); font-weight:500}
+  .axis .track{position:relative; height:5px; border-radius:99px; background:#e4e6e8}
+  .axis .track::before{content:""; position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:var(--gold-line)}
+  .axis .dot{position:absolute; top:50%; width:14px; height:14px; border-radius:99px; background:var(--gold);
+    transform:translate(-50%,-50%); box-shadow:0 0 0 4px rgba(126,130,135,.2); left:50%; transition:left .7s cubic-bezier(.22,1,.36,1)}
+  .axis.blur .dot{background:#bcbfc2; box-shadow:0 0 0 4px rgba(160,164,168,.18)}
+  .axis.blur .lab .on{color:var(--muted); font-weight:400}
+  details.more{margin-top:20px; border-top:1px solid var(--gold-line); padding-top:16px}
+  details.more summary{font-family:var(--sans); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); cursor:pointer; list-style:none}
+  details.more summary::-webkit-details-marker{display:none}
+  details.more summary::before{content:"▸ "; }
+  details.more[open] summary::before{content:"▾ "}
+  details.more .sliders{margin-top:18px}
+
+  .second{margin-top:24px; padding:18px 20px; border-radius:12px; background:var(--card); border:1px solid var(--gold-line)}
+  .second .fam{margin-bottom:4px}
+  .second h4{font-family:var(--serif); font-weight:500; font-size:22px; color:var(--ink)}
+  .second p{font-size:14px; font-weight:300; margin-top:6px}
+
+  .retry-line{text-align:center; margin-top:30px; font-size:13px; color:var(--muted)}
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--ink); color:#f6f7f8; font-size:13px; padding:11px 20px; border-radius:99px; transition:.3s; pointer-events:none; z-index:20}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  @keyframes fade{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+  .q-anim{animation:fade .4s ease both}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important}
+  }
+  .hidden{display:none !important}
+  footer{text-align:center; font-family:var(--sans); font-size:10px; letter-spacing:.16em; color:var(--muted); padding:18px; text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<main class="wrap center" id="screen">
+
+  <!-- INTRO -->
+  <section class="intro" id="intro">
+    <p class="eyebrow">Today's Scent</p>
+    <h1>오늘의 당신을<br/><em>향</em>으로 읽다</h1>
+    <p class="lede">이건 향수 테스트가 아닙니다. 당신이 지금 어떤 사람인지를 묻는 24개의 질문입니다. 향에 대해 한 번도 직접 묻지 않지만, 끝에 다다르면 당신의 향이 또렷하게 떠오릅니다.</p>
+    <p class="note-line">“같은 사람도 5년 전의 향과 지금의 향은 다르다.”</p>
+    <div class="actions">
+      <button class="btn" id="start">테스트 시작 <span aria-hidden="true">→</span></button>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="hidden">
+    <div class="topbar">
+      <div class="meta-row">
+        <span class="brand">Today's Scent</span>
+        <span class="count" id="count">01 / 24</span>
+      </div>
+      <div class="bar"><i id="barfill"></i></div>
+    </div>
+    <form class="q-wrap" id="qform" autocomplete="off">
+      <fieldset>
+        <p class="q-index" id="qindex">QUESTION 01</p>
+        <legend class="q-text" id="qtext"></legend>
+        <ul class="opts" id="opts"></ul>
+      </fieldset>
+      <div class="nav">
+        <button type="button" class="btn ghost" id="prev">← 이전</button>
+        <button type="button" class="btn" id="next" disabled>다음 →</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" class="hidden"></section>
+
+</main>
+
+<footer>Fragrance profiling · 7-axis vector model · Michael Edwards Wheel</footer>
+<div class="toast" id="toast">링크가 복사되었습니다</div>
+
+<script>
+/* ============================================================
+   DATA — 축 / 질문 / 프로필  (엔진과 분리)
+   축 키: fresh_warm, light_intense, citrus_woody,
+          classic_modern, day_night, dry_sweet, clean_skin
+   음수 = 왼쪽 극, 양수 = 오른쪽 극
+   ============================================================ */
+const AXES = [
+  {id:"fresh_warm",     neg:"프레시",  pos:"웜",     weight:1.0, adjNeg:"맑고 투명한",      adjPos:"따뜻하게 감싸는"},
+  {id:"light_intense",  neg:"라이트",  pos:"인텐스", weight:1.0, adjNeg:"가볍고 산뜻한",    adjPos:"선명하게 존재하는"},
+  {id:"citrus_woody",   neg:"시트러스",pos:"우디",   weight:0.9, adjNeg:"싱그러운",         adjPos:"깊고 단단한"},
+  {id:"classic_modern", neg:"클래식",  pos:"모던",   weight:0.7, adjNeg:"시간을 머금은",    adjPos:"세련되고 도시적인"},
+  {id:"day_night",      neg:"데이",    pos:"나이트", weight:0.8, adjNeg:"햇살을 닮은",      adjPos:"밤의 공기를 닮은"},
+  {id:"dry_sweet",      neg:"드라이",  pos:"스위트", weight:1.0, adjNeg:"건조하게 절제된",  adjPos:"달큰하고 관능적인"},
+  {id:"clean_skin",     neg:"클린",    pos:"스킨",   weight:1.0, adjNeg:"깨끗한",           adjPos:"체온에 스며드는"},
+];
+
+// 가중치 키 약어 → 축 id
+const K = {fw:"fresh_warm", li:"light_intense", cw:"citrus_woody", cm:"classic_modern", dn:"day_night", ds:"dry_sweet", cs:"clean_skin"};
+function w(o){const r={};for(const k in o)r[K[k]]=o[k];return r;}
+
+const QUESTIONS = [
+  {t:"오늘 아침, 당신의 커피는?", o:[
+    {l:"아이스 아메리카노, 블랙. 빠르고 선명하게", w:w({fw:-2,li:-2})},
+    {l:"따뜻한 플랫화이트, 우유 거품이 중요", w:w({fw:1})},
+    {l:"바닐라 라떼나 카라멜 마키아토", w:w({fw:3,li:2,ds:2})},
+    {l:"차(茶). 얼그레이나 자스민", w:w({fw:1,li:-1,cw:-1})},
+  ]},
+  {t:"낯선 도시에 도착했다. 가장 먼저 향하는 곳은?", o:[
+    {l:"오래된 시장, 골목, 로컬 가게", w:w({cm:-2,dn:-1})},
+    {l:"디자인 스튜디오나 컨셉 편집숍", w:w({cm:2})},
+    {l:"가장 오래된 바 혹은 와인셀러", w:w({cm:-1,dn:2,fw:2})},
+    {l:"루프탑이나 전망 좋은 카페", w:w({cm:1,li:-1})},
+  ]},
+  {t:"자려고 누웠는데 잠이 오지 않는다. 당신은?", o:[
+    {l:"유튜브나 릴스, 밝은 화면", w:w({dn:-1,li:-1})},
+    {l:"자연 소리 ASMR이나 백색소음", w:w({dn:1,fw:-1})},
+    {l:"캔들 하나 켜고 책이나 와인", w:w({dn:3,fw:2,li:2})},
+    {l:"그냥 버티다 결국 잠든다", w:{}},
+  ]},
+  {t:"당신의 집에서 가장 많이 열려 있는 창은?", o:[
+    {l:"항상 열어둔다. 바람이 들어와야 한다", w:w({fw:-2,cw:-1,li:-1})},
+    {l:"저녁에만. 서늘해지면 닫는다", w:w({fw:1,dn:1})},
+    {l:"거의 안 열어둔다. 나만의 공기", w:w({fw:2,cw:2,li:1})},
+    {l:"계절마다 다르다", w:{}},
+  ]},
+  {t:"지금 듣고 싶은 음악을 장르 말고 분위기로 고른다면?", o:[
+    {l:"밝고 빠른 비트, 발이 빨라지는 것", w:w({cm:2,li:-2,dn:-2})},
+    {l:"긴 피아노 연주, 고요함이 있는 것", w:w({cm:-2,li:-1})},
+    {l:"저음이 깔리는 재즈나 소울", w:w({cm:-1,li:2,dn:2})},
+    {l:"몽환적인 신스팝이나 익스페리멘탈", w:w({cm:2,li:1,dn:1})},
+  ]},
+  {t:"가장 좋아하는 계절의 한 장면을 고른다면?", o:[
+    {l:"초여름 아침, 젖은 풀과 빛의 대각선", w:w({fw:-3,cw:-2,dn:-2})},
+    {l:"가을 오후, 낙엽 밟는 소리와 흙냄새", w:w({fw:1,cw:2,dn:-1})},
+    {l:"겨울밤, 실내 난방의 열기와 캔들", w:w({fw:3,cw:1,dn:3})},
+    {l:"봄비 오는 날, 카페에서 창밖 보기", w:w({cw:-1})},
+  ]},
+  {t:"이 중 당신이 가장 오래 머물 수 있는 공간은?", o:[
+    {l:"커다란 유리창이 있는 화이트 스튜디오", w:w({cw:-1,cm:2,li:-1})},
+    {l:"낡은 목조 도서관, 책 냄새", w:w({cw:3,cm:-3,li:1})},
+    {l:"지하 바, 어두운 조명과 가죽 소파", w:w({cw:2,cm:-1,li:2,dn:2})},
+    {l:"넓은 공원, 자연광과 잔디", w:w({cw:-2,li:-2,fw:-2})},
+  ]},
+  {t:"지금 입고 있거나, 가장 편한 소재는?", o:[
+    {l:"린넨 또는 코튼, 가볍고 통기성 좋은 것", w:w({fw:-2,cw:-1})},
+    {l:"두꺼운 울이나 플리스, 따뜻하게 싸이는 것", w:w({fw:3,cw:1,cm:-1})},
+    {l:"가죽 또는 데님, 구조감이 있는 것", w:w({cw:2,cm:-1,li:1})},
+    {l:"실크나 슬립 원단, 부드럽게 흐르는 것", w:w({cm:1,li:1,dn:1})},
+  ]},
+  {t:"사진을 찍을 때, 당신이 프레임에 담는 것은?", o:[
+    {l:"자연광 아래의 텍스처, 조용한 정물", w:w({li:-1,cm:-1,dn:-1})},
+    {l:"강한 그림자 대비, 극적인 구도", w:w({li:3,dn:1})},
+    {l:"네온 불빛이나 야경, 흐릿한 보케", w:w({li:2,cm:2,dn:3})},
+    {l:"거의 안 찍는다, 눈으로만 담는다", w:w({li:1,cm:-1})},
+  ]},
+  {t:"혼자 주말을 보낸다면?", o:[
+    {l:"아침부터 나가서 전시, 산책, 브런치", w:w({dn:-3,fw:-1,li:-1})},
+    {l:"오후에 일어나 넷플릭스, 간식, 이불", w:w({dn:1,fw:2})},
+    {l:"저녁 이후 활성화. 바, 야간 드라이브", w:w({dn:3,fw:1,li:2})},
+    {l:"집에서 요리하고 친구를 초대한다", w:w({dn:1,fw:2,li:-1})},
+  ]},
+  {t:"본능으로 끌리는 향수 병의 생김새는?", o:[
+    {l:"투명하고 각진 미니멀한 병", w:w({cm:3,li:-1,cw:-1})},
+    {l:"둥글고 두꺼운 유리, 빈티지 레이블", w:w({cm:-3,li:1,cw:1})},
+    {l:"어둡고 묵직한 색의 병, 금속 캡", w:w({cm:-1,li:2,cw:2,dn:2})},
+    {l:"단순하고 작은 롤온이나 솔리드 타입", w:w({cm:1,li:-2,dn:-1})},
+  ]},
+  {t:"당신이 누군가에게 강한 인상을 남기는 방식은?", o:[
+    {l:"처음엔 조용한데 시간이 지나면 존재감이 커진다", w:w({li:2,fw:1,dn:1})},
+    {l:"첫 인상이 선명하고 에너지가 있다", w:w({li:-1,fw:-2,dn:-2})},
+    {l:"잘 기억나지 않지만 좋은 느낌이 남는다", w:w({li:-2,fw:-1})},
+    {l:"분위기로 방 전체를 물들인다", w:w({li:3,fw:2,dn:2})},
+  ]},
+  {t:"가장 마음이 편한 빛의 색은?", o:[
+    {l:"창으로 들어와 흰 벽에 반사되는 자연광", w:w({dn:-2,fw:-1})},
+    {l:"따뜻한 황금빛 조명, 램프 하나", w:w({dn:2,cm:-1,fw:2})},
+    {l:"차가운 블루 톤의 빛", w:w({cm:2,fw:-2})},
+    {l:"불규칙하게 흔들리는 촛불", w:w({dn:3,cm:-2,fw:1})},
+  ]},
+  {t:"가장 오래 기억하는 타인의 인상은?", o:[
+    {l:"활기차고 상쾌한, 공기를 바꾸는 사람", w:w({cw:-2,li:-1,cm:1})},
+    {l:"느리고 깊은, 이야기가 오래가는 사람", w:w({cw:2,li:2,cm:-2})},
+    {l:"미스터리하고 쉽게 읽히지 않는 사람", w:w({cw:1,li:2,dn:2})},
+    {l:"편안하고 투명한, 있는 그대로인 사람", w:w({cw:-1,li:-2,dn:-1})},
+  ]},
+  {t:"가장 끌리는 여행지의 장면은?", o:[
+    {l:"지중해 해안, 레몬나무와 흰 벽", w:w({cw:-3,fw:-1})},
+    {l:"스코틀랜드 안개 낀 숲, 이끼와 젖은 바위", w:w({cw:3,cm:-1})},
+    {l:"도쿄 뒷골목 바, 나무 카운터와 위스키", w:w({cw:2,fw:2,cm:-2,dn:2})},
+    {l:"뉴욕 현대미술관, 콘크리트와 흰 공간", w:w({cw:-1,fw:-1,cm:3})},
+  ]},
+  {t:"디저트 메뉴 앞에서, 당신의 손이 가는 곳은?", o:[
+    {l:"치즈 플래터 — 복잡하고 드라이한 게 진짜다", w:w({ds:-3,dn:-1,li:1})},
+    {l:"얼그레이 파나코타 — 향긋하지만 과하지 않게", w:w({ds:-1,fw:-1,cm:-1})},
+    {l:"솔티드 캐러멜 타르트 — 달지만 소금이 균형을", w:w({ds:2,dn:1,cm:1})},
+    {l:"초콜릿 퐁당 — 진하게, 아낌없이", w:w({ds:3,dn:2,li:2})},
+  ]},
+  {t:"기억에 남는 호텔 방 냄새가 있다면, 어느 쪽인가요?", o:[
+    {l:"갓 세탁한 흰 시트 — 아무 냄새 없이 깨끗한", w:w({cs:-3,ds:-2,fw:-2})},
+    {l:"은은한 아로마 디퓨저 — 공간에 스민 허브", w:w({cs:-1,fw:-1,cw:-1})},
+    {l:"나무 패널과 가죽 소파 — 고급 롯지의 온기", w:w({cs:1,cw:2,dn:1})},
+    {l:"누군가 다녀간 듯한 익숙한 체온의 온기", w:w({cs:3,li:1,dn:2})},
+  ]},
+  {t:"욕조를 채운다면, 지금 무엇을 넣고 싶어요?", o:[
+    {l:"아무것도 — 그냥 맑은 물, 미네랄만", w:w({cs:-3,ds:-3,fw:-2})},
+    {l:"라벤더 오일 몇 방울 — 정리되는 느낌", w:w({cs:-1,ds:-1,fw:-1})},
+    {l:"장미 꽃잎과 꿀 — 피부에 녹아드는 촉감", w:w({cs:1,ds:2,fw:1})},
+    {l:"머스크 오일 — 나와도 냄새가 남았으면", w:w({cs:3,ds:1,dn:2})},
+  ]},
+  {t:"누군가 ‘향기롭다’고 한다면, 어떤 향이었으면 해요?", o:[
+    {l:"막 씻은 듯한 깨끗함 — 비누와 물의 냄새", w:w({cs:-3,li:-2,ds:-2})},
+    {l:"공기처럼 자연스러운 — 향수인지 모를 투명함", w:w({cs:-1,li:-3,fw:-1})},
+    {l:"다가가고 싶어지는 — 은근하고 따뜻한 존재감", w:w({cs:2,li:1,fw:2})},
+    {l:"오래 기억되는 — 공간에 남는 강렬한 잔향", w:w({cs:3,li:3,dn:2})},
+  ]},
+  {t:"분위기 좋은 인테리어숍에서 향초를 고른다면?", o:[
+    {l:"자몽+민트 — 읽기만 해도 머리가 맑아지는", w:w({ds:-3,fw:-3,cw:-2})},
+    {l:"버베나+린넨 — 집이 호텔처럼 느껴지는", w:w({ds:-2,cs:-2,fw:-1})},
+    {l:"스모키 우드+앰버 — 어두운 방에 혼자 피우는", w:w({ds:1,dn:2,cw:2})},
+    {l:"바닐라+카라멜+통카빈 — 집을 공방으로", w:w({ds:3,fw:2,dn:1})},
+  ]},
+  {t:"텅 빈 방에 들어섰을 때, 어떤 냄새가 나면 ‘여기 좋다’ 싶어요?", o:[
+    {l:"아무 냄새도 안 나는 — 환기된 중성의 공간", w:w({cs:-3,li:-2,ds:-2})},
+    {l:"오래된 책과 나무 냄새 — 시간이 쌓인 공간", w:w({cs:1,cw:2,cm:-2})},
+    {l:"흙과 빗물 냄새 — 창 너머로 스미는 자연", w:w({cs:-1,fw:-2,cm:-1})},
+    {l:"이전 사람의 흔적이 남은 온기 — 친밀함", w:w({cs:3,cm:-1,dn:1})},
+  ]},
+  {t:"향수의 처음 터지는 향 vs 몇 시간 뒤 잔향, 어느 쪽이 더 좋아요?", o:[
+    {l:"처음 그 순간의 터짐이 제일 좋다", w:w({li:-2,fw:-2,ds:-1})},
+    {l:"드라이다운 초반 — 달콤함이 살짝 올라올 때", w:w({li:1,ds:2,cs:1})},
+    {l:"피부에 스민 마지막 잔향", w:w({li:2,cs:3,dn:1})},
+    {l:"없어지지만 않으면 된다 — 지속력이 전부", w:w({li:3,dn:2,cs:2})},
+  ]},
+  {t:"날씨가 당신의 향 선택에 영향을 주나요?", o:[
+    {l:"비 오는 날엔 더 그린하고 흙냄새 나는 걸 찾는다", w:w({fw:-2,cw:-1,ds:-2})},
+    {l:"추울수록 더 달고 무거운 게 당긴다", w:w({fw:2,ds:3,dn:2})},
+    {l:"여름엔 아쿠아틱, 겨울엔 우디 — 계절에 맞게", w:w({cm:1,dn:1,cw:1})},
+    {l:"날씨와 상관없이 내 향은 고정 — 시그니처가 있다", w:w({cm:-2,li:1,cs:1})},
+  ]},
+  {t:"누군가에게서 맡은 향 중, 가장 끌렸던 건 어떤 계열이었나요?", o:[
+    {l:"깨끗하고 상쾌한 — 비누 같고 투명한", w:w({cs:-3,fw:-2,li:-2})},
+    {l:"가볍고 플로럴한 — 알아채기 어려울 만큼 섬세한", w:w({cs:-1,li:-1,fw:1})},
+    {l:"따뜻하고 스파이시한 — 가까이서야 맡히는", w:w({cs:2,fw:2,dn:2})},
+    {l:"짙고 관능적인 — 안은 뒤에도 피부에 남는", w:w({cs:3,li:3,dn:3})},
+  ]},
+];
+
+// 프로필: 좌표는 -100~+100 (코드에서 /100 정규화)
+const PROFILES_RAW = [
+  {id:"citrus",name:"시트러스",fam:"Fresh · Citrus",notes:["베르가못","레몬","네롤리","만다린","화이트 머스크"],
+   mood:"첫 햇살이 피부에 닿는 순간처럼, 청명하고 아무것도 무겁지 않은 자유.",vibe:"아침 6시의 오픈카, 창문을 다 열었을 때 들어오는 바람.",
+   c:{fresh_warm:-70,light_intense:-52,citrus_woody:-78,classic_modern:-52,day_night:-55,dry_sweet:-30,clean_skin:-52}},
+  {id:"aromatic",name:"아로마틱",fam:"Fresh · Aromatic",notes:["라벤더","로즈마리","세이지","바질","앰버그리스"],
+   mood:"손끝에 허브 잎을 비볐을 때 올라오는, 날카롭지도 달지도 않은 생동감.",vibe:"프로방스 시장의 오전, 말린 허브 다발 사이를 걷는.",
+   c:{fresh_warm:-32,light_intense:-28,citrus_woody:-35,classic_modern:-28,day_night:-42,dry_sweet:-62,clean_skin:-52}},
+  {id:"green",name:"그린",fam:"Fresh · Green",notes:["갈바눔","바이올렛 리프","컷 그라스","오이","시더우드"],
+   mood:"잘 벼린 풀날이 공기를 가르듯, 생생하고 약간은 날 선 싱그러움.",vibe:"비 오기 직전의 정원, 젖은 풀과 흙 사이 어딘가.",
+   c:{fresh_warm:-75,light_intense:-50,citrus_woody:-30,classic_modern:-10,day_night:-60,dry_sweet:-60,clean_skin:-50}},
+  {id:"aquatic",name:"아쿠아틱",fam:"Fresh · Water",notes:["칼론","씨솔트","워터 릴리","앰브레트","머스크"],
+   mood:"수평선이 보이는 곳에서만 느껴지는 공기, 물과 바람의 중간.",vibe:"새벽 4시의 항구, 인기척 없이 파도 소리만 가득한.",
+   c:{fresh_warm:-80,light_intense:-50,citrus_woody:-50,classic_modern:35,day_night:-40,dry_sweet:-45,clean_skin:-80}},
+  {id:"floral",name:"플로럴",fam:"Floral",notes:["로즈","자스민","피오니","일랑일랑","머스크"],
+   mood:"꽃잎 하나가 피부에 내려앉을 때의 무게, 가볍고도 진한 감각.",vibe:"부티크 호텔 로비, 꽃 장식이 가득하지만 압도하지 않는.",
+   c:{fresh_warm:10,light_intense:-20,citrus_woody:-20,classic_modern:-40,day_night:-30,dry_sweet:20,clean_skin:-30}},
+  {id:"softFloral",name:"소프트 플로럴",fam:"Floral · Powdery",notes:["아이리스","헬리오트로프","알데하이드","화이트 로즈","샌달우드"],
+   mood:"화장대에서 어린 시절의 냄새를 맡는 것 같은, 포근하고 섬세한 기억.",vibe:"빈티지 파우더 컴팩트를 열었을 때의, 시간이 멈춘 우아함.",
+   c:{fresh_warm:30,light_intense:-40,citrus_woody:-25,classic_modern:-65,day_night:-20,dry_sweet:55,clean_skin:-25}},
+  {id:"floralAmber",name:"플로럴 앰버",fam:"Floral · Amber",notes:["로즈","자스민","앰버","통카빈","무스크 블랑"],
+   mood:"황금빛 조명 아래 드레스를 입은 누군가가 스쳐 지나갈 때의 잔향.",vibe:"오페라가 끝난 뒤의 로비, 여운이 공기 중에 떠도는.",
+   c:{fresh_warm:55,light_intense:20,citrus_woody:10,classic_modern:-50,day_night:40,dry_sweet:45,clean_skin:10}},
+  {id:"fruityFloral",name:"프루티 플로럴",fam:"Floral · Fruity",notes:["피치","라즈베리","피오니","로즈","화이트 머스크"],
+   mood:"갓 따온 복숭아와 꽃향기가 섞이는, 달콤하지만 성숙한 오후.",vibe:"여름 정원 파티의 3시, 과일 소르베와 꽃 화환이 공존하는.",
+   c:{fresh_warm:-10,light_intense:-30,citrus_woody:-30,classic_modern:30,day_night:-25,dry_sweet:65,clean_skin:-35}},
+  {id:"softAmber",name:"소프트 앰버",fam:"Amber · Soft",notes:["앰버","통카빈","바닐라","아이리스","샌달우드"],
+   mood:"벽난로 옆에서 책을 읽는 저녁, 조용하지만 깊이가 있는 온기.",vibe:"작은 골동품 서점, 오래된 종이와 가죽과 희미한 캔들 연기.",
+   c:{fresh_warm:65,light_intense:10,citrus_woody:20,classic_modern:-55,day_night:30,dry_sweet:60,clean_skin:-10}},
+  {id:"amber",name:"앰버",fam:"Amber · Oriental",notes:["올리바눔","벤조인","앰버","통카빈","사향"],
+   mood:"고대 향신료 교역로의 공기, 시간과 이국성이 켜켜이 쌓인 존재감.",vibe:"중동의 수크 골목, 밤의 열기와 레진 향이 번갈아 오는.",
+   c:{fresh_warm:80,light_intense:70,citrus_woody:30,classic_modern:-30,day_night:75,dry_sweet:55,clean_skin:45}},
+  {id:"woodyAmber",name:"우디 앰버",fam:"Amber · Woody",notes:["우드 앰버","패촐리","시더우드","앰버","베티버"],
+   mood:"숲 깊은 곳의 오래된 신전이 있다면 이런 냄새일, 영적이고 깊은.",vibe:"일본의 고찰, 삼나무 기둥과 향 연기가 공기를 채운.",
+   c:{fresh_warm:70,light_intense:60,citrus_woody:75,classic_modern:-20,day_night:65,dry_sweet:30,clean_skin:20}},
+  {id:"gourmand",name:"구르망",fam:"Amber · Gourmand",notes:["바닐라","캐러멜","통카빈","커피","벤조인"],
+   mood:"파리의 밤 카페, 에스프레소와 캐러멜이 녹는 달콤하고 관능적인 공기.",vibe:"갓 구운 마들렌 옆에 와인 한 잔, 겨울 저녁의 나른한 포만감.",
+   c:{fresh_warm:75,light_intense:50,citrus_woody:15,classic_modern:40,day_night:70,dry_sweet:90,clean_skin:25}},
+  {id:"woods",name:"우즈",fam:"Woody",notes:["샌달우드","시더우드","베티버","우드","머스크"],
+   mood:"숲의 중심에서만 느껴지는 침묵, 나무가 내뿜는 조용한 존재감.",vibe:"새벽 산행, 이슬 맺힌 낙엽 위를 걷는 적막하고 선명한.",
+   c:{fresh_warm:20,light_intense:30,citrus_woody:80,classic_modern:-10,day_night:20,dry_sweet:-40,clean_skin:-20}},
+  {id:"chypre",name:"모시 우즈 / 시프레",fam:"Woody · Chypre",notes:["오크모스","라브다눔","베르가못","패촐리","로즈"],
+   mood:"이끼 낀 돌 위를 걷는 듯한, 도시와 자연 사이에 선 복잡한 우아함.",vibe:"70년대 이탈리아 영화 속 여주인공, 시간을 초월한 불가사의함.",
+   c:{fresh_warm:25,light_intense:40,citrus_woody:65,classic_modern:-70,day_night:35,dry_sweet:-45,clean_skin:-15}},
+  {id:"leather",name:"드라이 우즈 / 레더",fam:"Woody · Leather",notes:["버치 타르","시스투스","카르다몸","스모크","베티버"],
+   mood:"새 가죽 재킷을 처음 입었을 때처럼, 단단하고 자신감 있고 약간 위험한.",vibe:"비어 있는 오토바이 정비소, 기름과 가죽과 금속이 레이어된.",
+   c:{fresh_warm:40,light_intense:65,citrus_woody:70,classic_modern:-15,day_night:60,dry_sweet:-70,clean_skin:30}},
+  {id:"woodyAromatic",name:"우디 아로마틱",fam:"Woody · Aromatic",notes:["주니퍼 베리","시더우드","라벤더","베티버","암브록산"],
+   mood:"진에 라벤더 한 방울을 떨어뜨린 듯, 허브적이고 단단한 나무 냄새.",vibe:"스코틀랜드 증류소, 오크통 옆의 차갑고 허브적인 공기.",
+   c:{fresh_warm:-10,light_intense:35,citrus_woody:65,classic_modern:-25,day_night:25,dry_sweet:-50,clean_skin:-40}},
+  {id:"muskyWoods",name:"무스키 우즈",fam:"Woody · Musky",notes:["화이트 머스크","샌달우드","앰브레트 씨드","카슈미란","세드라목"],
+   mood:"깨끗한 피부에 미세한 온기가 더해진, 나인지 향수인지 모를 밀착감.",vibe:"햇볕에 말린 이불, 피부와 구별되지 않는 스킨 센트.",
+   c:{fresh_warm:15,light_intense:-25,citrus_woody:35,classic_modern:30,day_night:-10,dry_sweet:-20,clean_skin:-55}},
+  {id:"spicyWoody",name:"스파이시 우디",fam:"Woody · Spicy",notes:["블랙 페퍼","카르다몸","시나몬","우드","앰버"],
+   mood:"밤의 도시를 걷는 듯한, 예측 불가능하고 충동적인 매력.",vibe:"재즈 클럽 백스테이지, 어두운 조명과 향신료와 땀이 섞인 공기.",
+   c:{fresh_warm:60,light_intense:55,citrus_woody:60,classic_modern:25,day_night:70,dry_sweet:15,clean_skin:35}},
+];
+const PROFILES = PROFILES_RAW.map(p=>{
+  const v={}; for(const a of AXES) v[a.id]=(p.c[a.id]||0)/100; return {...p,v};
+});
+
+/* ============================================================
+   ENGINE — 누적 / 정규화 / 매칭 / 신뢰도  (데이터를 모름)
+   ============================================================ */
+// 축별 이론적 최대 절대값 (각 질문에서 옵션 중 |w| 최대를 합산)
+const MAXABS = (()=>{ const m={}; for(const a of AXES) m[a.id]=0;
+  for(const q of QUESTIONS){ for(const a of AXES){ let mx=0;
+    for(const o of q.o){ const v=Math.abs(o.w[a.id]||0); if(v>mx)mx=v; } m[a.id]+=mx; } }
+  return m; })();
+
+function score(answers){
+  const raw={}, sig={}; for(const a of AXES){ raw[a.id]=0; sig[a.id]=[]; }
+  answers.forEach((oi,qi)=>{ if(oi==null)return; const wv=QUESTIONS[qi].o[oi].w;
+    for(const ax in wv){ raw[ax]+=wv[ax]; if(wv[ax]!==0) sig[ax].push(wv[ax]); } });
+  const norm={}; for(const a of AXES){ const mx=MAXABS[a.id]||1;
+    norm[a.id]=Math.max(-1,Math.min(1, raw[a.id]/mx)); }
+  return {norm,sig};
+}
+
+function axisConsistency(signals){
+  const n=signals.length; if(!n) return {score:0,intensity:0,samples:0};
+  const mean=signals.reduce((a,b)=>a+b,0)/n;
+  const pos=signals.filter(s=>s>0).length, neg=signals.filter(s=>s<0).length;
+  const dir=pos+neg; const agreement=dir?Math.max(pos,neg)/dir:0;
+  const intensity=Math.min(Math.abs(mean)/3,1);
+  const directionScore=Math.max(0,(agreement-0.5)*2);
+  return {score:directionScore*(0.4+0.6*intensity),intensity,samples:n};
+}
+
+function confidence(sig){
+  const arr=AXES.map(a=>({a,c:axisConsistency(sig[a.id])})).filter(x=>x.c.samples>0);
+  if(!arr.length) return 0;
+  let wSum=0,acc=0;
+  for(const {c} of arr){ const wt=0.3+0.7*c.intensity; acc+=c.score*wt; wSum+=wt; }
+  const raw=acc/wSum;
+  const minS=Math.min(...arr.map(x=>x.c.samples));
+  const pen=minS>=3?1:0.85+0.05*minS;
+  return Math.round(raw*pen*100);
+}
+
+// 축별 표준화(z-score): 프로필 좌표가 한 방향으로 뭉치는 다중공선성을 펴서
+// 매칭 해상도를 높이고 모든 프로필이 자기 영역(basin)을 갖게 한다.
+const ZSTAT=(()=>{ const s={}; for(const a of AXES){ const xs=PROFILES.map(p=>p.v[a.id]);
+  const m=xs.reduce((x,y)=>x+y,0)/xs.length;
+  const sd=Math.sqrt(xs.reduce((q,x)=>q+(x-m)**2,0)/xs.length)||1; s[a.id]={m,sd}; } return s; })();
+const zf=(id,v)=>(v-ZSTAT[id].m)/ZSTAT[id].sd;
+
+function weightedDist(u,p){ let s=0;
+  for(const a of AXES){ const d=(zf(a.id,u[a.id])-zf(a.id,p.v[a.id]))*a.weight; s+=d*d; } return Math.sqrt(s); }
+
+function match(u){
+  const ranked=PROFILES.map(p=>({p,dist:weightedDist(u,p)})).sort((a,b)=>a.dist-b.dist);
+  const [first,second]=ranked;
+  const gap=(second.dist-first.dist)/(first.dist||1e-6);
+  return {ranked,primary:first.p,secondary:second.p,hybrid:gap<0.06};
+}
+
+function dominant(u,n){ return [...AXES].map(a=>({a,mag:Math.abs(u[a.id])}))
+  .sort((x,y)=>y.mag-x.mag).slice(0,n).map(x=>x.a); }
+
+function stateSentence(u){
+  const tops=dominant(u,2);
+  const adj=tops.map(a=>u[a.id]>=0?a.adjPos:a.adjNeg);
+  return `오늘의 당신은 ${adj[0]} ${adj[1]} 향에 끌립니다.`;
+}
+
+/* ============================================================
+   UI / FLOW
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let state={idx:0, answers:new Array(QUESTIONS.length).fill(null)};
+
+function show(id){ ["intro","quiz","result"].forEach(s=>$("#"+s).classList.toggle("hidden",s!==id));
+  document.getElementById("screen").classList.toggle("center", id!=="quiz" && id!=="result"); window.scrollTo(0,0); }
+
+function pad(n){ return String(n).padStart(2,"0"); }
+
+function renderQuestion(){
+  const i=state.idx, q=QUESTIONS[i];
+  $("#count").textContent=`${pad(i+1)} / ${QUESTIONS.length}`;
+  $("#qindex").textContent=`QUESTION ${pad(i+1)}`;
+  $("#qtext").textContent=q.t;
+  $("#barfill").style.width=`${(i)/QUESTIONS.length*100}%`;
+  const ul=$("#opts"); ul.innerHTML="";
+  ul.classList.remove("q-anim"); void ul.offsetWidth; ul.classList.add("q-anim");
+  q.o.forEach((o,oi)=>{
+    const li=document.createElement("li"); li.className="opt";
+    const id=`q${i}o${oi}`;
+    li.innerHTML=`<input type="radio" name="q${i}" id="${id}" value="${oi}" ${state.answers[i]===oi?"checked":""}/>`+
+      `<label for="${id}"><span class="tick" aria-hidden="true"></span><span>${o.l}</span></label>`;
+    li.querySelector("input").addEventListener("change",()=>{
+      state.answers[i]=oi; $("#next").disabled=false; save();
+      // 가벼운 자동 진행 (reduced-motion이면 더 짧게)
+      setTimeout(()=>{ if(state.answers[i]===oi) goNext(); }, reduce?120:360);
+    });
+    ul.appendChild(li);
+  });
+  $("#prev").style.visibility = i===0 ? "hidden":"visible";
+  $("#next").disabled = state.answers[i]==null;
+  $("#next").textContent = i===QUESTIONS.length-1 ? "결과 보기 ✦" : "다음 →";
+}
+
+function goNext(){
+  if(state.answers[state.idx]==null) return;
+  if(state.idx<QUESTIONS.length-1){ state.idx++; renderQuestion(); }
+  else finish();
+}
+function goPrev(){ if(state.idx>0){ state.idx--; renderQuestion(); } }
+
+function finish(){
+  $("#barfill").style.width="100%";
+  const {norm,sig}=score(state.answers);
+  const conf=confidence(sig);
+  const m=match(norm);
+  renderResult(norm,conf,m,sig);
+  show("result");
+  history.replaceState(null,"",`?a=${state.answers.map(x=>x==null?0:x).join("")}`);
+}
+
+function famGradient(fam){
+  // 모노크롬 그레이 베이스 + 계열별 미세한 쿨 톤 뉘앙스 (색상 아닌 명도/톤차)
+  if(/Fresh/.test(fam)) return "linear-gradient(135deg,#e8eaec,#f4f5f6)";   // 가장 밝고 뉴트럴
+  if(/Floral/.test(fam)) return "linear-gradient(135deg,#dfe3e6,#eef1f3)";  // 살짝 쿨한 라벤더 언더톤
+  if(/Amber/.test(fam)) return "linear-gradient(135deg,#d6d7da,#e9eaec)";   // 따뜻함 제거한 중성 그레이
+  return "linear-gradient(135deg,#cdd4d9,#e2e8ec)";                          // Woody — 깊은 스틸 블루그레이
+}
+
+function profileImage(p){
+  return `url("assets/scents/webp/${p.id}.webp"), ${famGradient(p.fam)}`;
+}
+
+function axisBar(a,val,blur){
+  const left=((val+1)/2*100).toFixed(1);
+  const onNeg=val<0;
+  return `<div class="axis${blur?" blur":""}">
+    <div class="lab"><span class="${onNeg?"on":""}">${a.neg}</span><span class="${onNeg?"":"on"}">${a.pos}</span></div>
+    <div class="track"><span class="dot" style="left:${left}%"></span></div></div>`;
+}
+
+function renderResult(u,conf,m,sig){
+  const p=m.primary;
+  const doms=dominant(u,3);
+  const domIds=doms.map(a=>a.id);
+  const rest=AXES.filter(a=>!domIds.includes(a.id));
+  const consistency={}; for(const a of AXES) consistency[a.id]=axisConsistency(sig[a.id]);
+
+  const d=new Date();
+  const dateStr=`${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())}`;
+
+  // 가장 선명 / 흐릿 축
+  const scored=AXES.map(a=>({a,s:consistency[a.id].score}));
+  const sharp=[...scored].sort((x,y)=>y.s-x.s)[0];
+  const blurry=[...scored].sort((x,y)=>x.s-y.s)[0];
+
+  $("#result").innerHTML=`
+   <div class="result">
+    <p class="r-stamp">Today's Scent · ${dateStr}</p>
+    <p class="r-state">“${stateSentence(u)}”</p>
+
+    <div class="hero-card">
+      <div class="hero-img" style="background-image:${profileImage(p)}"></div>
+      <div class="hero-body">
+        <p class="fam">${p.fam}${m.hybrid?` × ${m.secondary.fam}`:""}</p>
+        <h2 class="r-name">${p.name}${m.hybrid?` <span style="color:var(--gold-soft)">×</span> ${m.secondary.name}`:""}
+          <small>${m.hybrid?"두 세계 사이에 선, 하이브리드 프로필":"당신의 오늘에 가장 가까운 향 계열"}</small></h2>
+        <p class="r-mood">${p.mood}</p>
+        <p class="r-vibe">“${p.vibe}”</p>
+        <div class="chips">${p.notes.map(n=>`<span class="chip">${n}</span>`).join("")}</div>
+      </div>
+    </div>
+
+    <div class="conf"><b>${conf}%</b><span>이 결과의 선명도</span></div>
+    <p style="text-align:center;font-size:13.5px;color:var(--ink-2);margin-top:10px;font-weight:300">
+      당신은 특히 <b style="color:var(--ink)">${u[sharp.a.id]>=0?sharp.a.pos:sharp.a.neg}</b> 쪽이 또렷해요.
+      <b style="color:var(--ink)">${blurry.a.neg}↔${blurry.a.pos}</b>는 그날 기분 따라 오갈 수 있는 여지예요.</p>
+
+    <div class="sliders" style="margin-top:24px">
+      ${doms.map(a=>axisBar(a,u[a.id],consistency[a.id].score<0.4)).join("")}
+    </div>
+
+    <details class="more">
+      <summary>나머지 4개 축 전체 보기</summary>
+      <div class="sliders">${rest.map(a=>axisBar(a,u[a.id],consistency[a.id].score<0.4)).join("")}</div>
+    </details>
+
+    ${m.hybrid?`<div class="second"><p class="fam">서브 향 계열</p>
+      <h4>${m.secondary.name}</h4><p>${m.secondary.mood}</p></div>`:""}
+
+    <div class="actions" style="margin-top:34px">
+      <button class="btn" id="share">결과 링크 공유</button>
+      <button class="btn ghost" id="restart">다시 하기</button>
+    </div>
+    <p class="retry-line">향은 계절과 기분 따라 달라집니다. <b style="color:var(--ink-2)">3개월 뒤 다시</b> 해보세요.</p>
+   </div>`;
+
+  // 슬라이더 애니메이션 (초기 50%에서 출발 → 실제 위치)
+  if(!reduce){
+    $("#result").querySelectorAll(".dot").forEach(dot=>{
+      const target=dot.style.left; dot.style.left="50%";
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ dot.style.left=target; }));
+    });
+  }
+  $("#share").addEventListener("click",shareLink);
+  $("#restart").addEventListener("click",restart);
+}
+
+function shareLink(){
+  const url=location.href;
+  navigator.clipboard?.writeText(url).then(showToast,()=>fallbackCopy(url));
+}
+function fallbackCopy(t){ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select();
+  try{document.execCommand("copy");showToast();}catch(e){} ta.remove(); }
+function showToast(){ const t=$("#toast"); t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1800); }
+
+function restart(){ state={idx:0,answers:new Array(QUESTIONS.length).fill(null)};
+  localStorage.removeItem("scent:progress"); history.replaceState(null,"",location.pathname);
+  show("intro"); }
+
+function save(){ try{ localStorage.setItem("scent:progress",JSON.stringify({v:1,a:state.answers})); }catch(e){} }
+
+/* ---------- init ---------- */
+$("#start").addEventListener("click",()=>{ state.idx=0; show("quiz"); renderQuestion(); });
+$("#next").addEventListener("click",goNext);
+$("#prev").addEventListener("click",goPrev);
+document.addEventListener("keydown",e=>{
+  if($("#quiz").classList.contains("hidden"))return;
+  if(e.key==="ArrowRight"&&!$("#next").disabled)goNext();
+  if(e.key==="ArrowLeft")goPrev();
+});
+
+// 공유 링크로 진입 시 결과 즉시 복원
+(function boot(){
+  const m=new URLSearchParams(location.search).get("a");
+  if(m && m.length===QUESTIONS.length && /^[0-3]+$/.test(m)){
+    state.answers=m.split("").map(Number); state.idx=QUESTIONS.length-1; finish(); return;
+  }
+  show("intro");
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+# 원본 고해상 소스 이미지 — 배포엔 assets/scents/webp/*.webp 사용
+assets/scents/*.png
+.DS_Store
