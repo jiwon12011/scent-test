@@ -71,11 +71,10 @@
   .actions{display:flex; gap:12px; justify-content:center; margin-top:34px; flex-wrap:wrap}
 
   /* ---------- question ---------- */
-  .q-wrap{margin-top:6px}
   .q-index{font-family:var(--sans); font-size:11px; letter-spacing:.2em; color:var(--gold); margin-bottom:14px}
   legend.q-text{font-family:var(--serif); font-weight:400; font-size:clamp(26px,5.4vw,37px); line-height:1.28; color:var(--ink); letter-spacing:-.02em; margin-bottom:6px; display:block}
   fieldset{border:none}
-  .opts{list-style:none; margin-top:30px; display:flex; flex-direction:column; gap:12px}
+  .opts{list-style:none; margin-top:24px; display:flex; flex-direction:column; gap:12px}
   .opt{position:relative}
   .opt input{position:absolute; opacity:0; width:1px; height:1px}
   .opt label{display:flex; align-items:center; gap:14px; min-height:58px; padding:14px 20px; cursor:pointer;
@@ -86,7 +85,7 @@
   .opt input:checked + label{background:#e6e8ea; border-color:var(--gold); transform:translateX(2px)}
   .opt input:checked + label .tick{border-color:var(--gold); background:var(--gold); box-shadow:inset 0 0 0 3px var(--card)}
   .opt input:focus-visible + label{outline:2px solid var(--gold); outline-offset:2px}
-  .nav{display:flex; justify-content:space-between; align-items:center; margin-top:30px}
+  .nav{display:flex; justify-content:space-between; align-items:center}
 
   /* ---------- result ---------- */
   .result{animation:fade .6s ease both}
@@ -137,6 +136,28 @@
   .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); opacity:0;
     background:var(--ink); color:#f6f7f8; font-size:13px; padding:11px 20px; border-radius:99px; transition:.3s; pointer-events:none; z-index:20}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  /* ---------- word-break for Korean ---------- */
+  legend.q-text{word-break:keep-all; overflow-wrap:break-word}
+  .opt label{word-break:keep-all; overflow-wrap:break-word}
+
+  /* ---------- stable quiz height (no jitter) ---------- */
+  #quiz{display:flex; flex-direction:column; flex:1}
+  #qform{flex:1; display:flex; flex-direction:column}
+  #qform fieldset{flex:1; display:flex; flex-direction:column}
+  .q-wrap{flex:1; display:flex; flex-direction:column; margin-top:6px}
+  .opts{flex:1}
+  .nav{margin-top:auto; padding-top:24px}
+
+  /* ---------- hero image ---------- */
+  .hero-img{overflow:hidden}
+  .hero-img::after{z-index:1}
+  .hero-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity .5s; z-index:0}
+
+  /* ---------- radar chart ---------- */
+  .radar-wrap{border-top:1px solid var(--gold-line); padding-top:24px; margin-top:8px}
+  .radar-title{font-family:var(--sans); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); text-align:center; margin-bottom:4px}
+  .radar-sub{font-size:12px; color:var(--muted); text-align:center; margin-bottom:8px}
 
   @keyframes fade{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
   .q-anim{animation:fade .4s ease both}
@@ -480,6 +501,54 @@ function match(u){
 function dominant(u,n){ return [...AXES].map(a=>({a,mag:Math.abs(u[a.id])}))
   .sort((x,y)=>y.mag-x.mag).slice(0,n).map(x=>x.a); }
 
+function renderRadarChart(u){
+  const N=AXES.length, CX=200, CY=185, R=108, LP=22;
+  const angles=AXES.map((_,i)=>-Math.PI/2+(Math.PI*2/N)*i);
+  const vals=AXES.map(a=>(u[a.id]+1)/2);
+
+  const grids=[0.25,0.5,0.75,1].map(f=>{
+    const pts=angles.map(a=>`${(CX+f*R*Math.cos(a)).toFixed(1)},${(CY+f*R*Math.sin(a)).toFixed(1)}`).join(' ');
+    return `<polygon points="${pts}" fill="none" stroke="${f===0.5?'#c0c4c8':'#e8eaec'}" stroke-width="${f===0.5?1.5:0.8}"/>`;
+  }).join('');
+
+  const spokes=angles.map(a=>
+    `<line x1="${CX}" y1="${CY}" x2="${(CX+R*Math.cos(a)).toFixed(1)}" y2="${(CY+R*Math.sin(a)).toFixed(1)}" stroke="#e8eaec" stroke-width="1"/>`
+  ).join('');
+
+  const userPts=vals.map((v,i)=>
+    `${(CX+v*R*Math.cos(angles[i])).toFixed(1)},${(CY+v*R*Math.sin(angles[i])).toFixed(1)}`
+  ).join(' ');
+
+  const dots=vals.map((v,i)=>{
+    const x=CX+v*R*Math.cos(angles[i]), y=CY+v*R*Math.sin(angles[i]);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="#6c7075" stroke="#fbfbfc" stroke-width="1.5"/>`;
+  }).join('');
+
+  const labels=AXES.map((ax,i)=>{
+    const a=angles[i];
+    const lx=CX+(R+LP)*Math.cos(a), ly=CY+(R+LP)*Math.sin(a);
+    const anchor=lx<CX-6?'end':lx>CX+6?'start':'middle';
+    const isPos=u[ax.id]>=0;
+    return `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="10" font-family="Pretendard,-apple-system,sans-serif">`+
+      `<tspan fill="${!isPos?'#3a3d40':'#b0b4b8'}" font-weight="${!isPos?'500':'400'}">${ax.neg}</tspan>`+
+      `<tspan fill="#c8ccd0"> · </tspan>`+
+      `<tspan fill="${isPos?'#3a3d40':'#b0b4b8'}" font-weight="${isPos?'500':'400'}">${ax.pos}</tspan>`+
+      `</text>`;
+  }).join('');
+
+  return `<div class="radar-wrap">
+    <p class="radar-title">SCENT PROFILE</p>
+    <p class="radar-sub">굵은 쪽이 오늘 당신의 방향 · 중간 선은 중립</p>
+    <div style="display:flex;justify-content:center">
+      <svg width="400" height="370" viewBox="0 0 400 370" style="max-width:100%;display:block;overflow:visible">
+        ${grids}${spokes}
+        <polygon points="${userPts}" fill="rgba(100,108,114,0.15)" stroke="rgba(100,108,114,0.8)" stroke-width="2" stroke-linejoin="round"/>
+        ${dots}${labels}
+      </svg>
+    </div>
+  </div>`;
+}
+
 function stateSentence(u){
   const tops=dominant(u,2);
   const adj=tops.map(a=>u[a.id]>=0?a.adjPos:a.adjNeg);
@@ -499,6 +568,7 @@ function show(id){ ["intro","quiz","result"].forEach(s=>$("#"+s).classList.toggl
 function pad(n){ return String(n).padStart(2,"0"); }
 
 function renderQuestion(){
+  window.scrollTo(0,0);
   const i=state.idx, q=QUESTIONS[i];
   $("#count").textContent=`${pad(i+1)} / ${QUESTIONS.length}`;
   $("#qindex").textContent=`QUESTION ${pad(i+1)}`;
@@ -581,7 +651,9 @@ function renderResult(u,conf,m,sig){
     <p class="r-state">“${stateSentence(u)}”</p>
 
     <div class="hero-card">
-      <div class="hero-img" style="background-image:${profileImage(p)}"></div>
+      <div class="hero-img" style="background:${famGradient(p.fam)}">
+        <img src="assets/scents/webp/${p.id}.webp" alt="${p.name}" loading="eager" onload="this.style.opacity=1" onerror="this.remove()">
+      </div>
       <div class="hero-body">
         <p class="fam">${p.fam}${m.hybrid?` × ${m.secondary.fam}`:""}</p>
         <h2 class="r-name">${p.name}${m.hybrid?` <span style="color:var(--gold-soft)">×</span> ${m.secondary.name}`:""}
@@ -605,6 +677,8 @@ function renderResult(u,conf,m,sig){
       <summary>나머지 4개 축 전체 보기</summary>
       <div class="sliders">${rest.map(a=>axisBar(a,u[a.id],consistency[a.id].score<0.4)).join("")}</div>
     </details>
+
+    ${renderRadarChart(u)}
 
     ${m.hybrid?`<div class="second"><p class="fam">서브 향 계열</p>
       <h4>${m.secondary.name}</h4><p>${m.secondary.mood}</p></div>`:""}
