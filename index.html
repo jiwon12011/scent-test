@@ -565,7 +565,7 @@ function renderRadarChart(u){
 function stateSentence(u){
   const tops=dominant(u,2);
   const adj=tops.map(a=>u[a.id]>=0?a.adjPos:a.adjNeg);
-  return `오늘의 당신은 ${adj[0]} ${adj[1]} 향에 끌립니다.`;
+  return `오늘의 당신은 ${adj[0]}<br>${adj[1]} 향에 끌립니다.`;
 }
 
 /* ============================================================
